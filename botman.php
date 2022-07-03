@@ -9,6 +9,8 @@ use BotMan\BotMan\Drivers\DriverManager;
 
 require_once('OnboardingConversation.php');
 
+// require_once ('Connexion');
+
 $config = [];
 
 DriverManager::loadDriver(\BotMan\Drivers\Web\WebDriver::class);
@@ -17,7 +19,7 @@ $adapter = new FilesystemAdapter();
 
 $botman = BotManFactory::create($config, new SymfonyCache($adapter));
 
-$botman->hears('Hello', function($bot) {
+$botman->hears('Bonjour', function($bot) {
     
     $bot->startConversation(new OnboardingConversation);
     

@@ -1393,7 +1393,7 @@
         title: "BotMan Widget",
         cookieValidInDays: 1,
         introMessage: "",
-        placeholderText: "Send a message...",
+        placeholderText: "Envoyer un message...",
         displayMessageTime: !0,
         sendWidgetOpenedEvent: !1,
         widgetOpenedEventData: "",
