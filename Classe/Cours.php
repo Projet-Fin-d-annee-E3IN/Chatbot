@@ -1,5 +1,5 @@
 <?php
-    require 'Connexion.php';
+include '../Connexion.php';
     class Cours
     {
         public $idCours;
@@ -21,40 +21,12 @@
             $this->nom = $nom;
         }
 
-        function addCours($nom, $sujet, $quest){
+        function addCours(){
             $pdo = connecDataBase();
             $data = [
-                'nom' => $nom,
-                'sujet' => $sujet,
+                ':nom' => $this->nom,
             ];
-            $sql = "INSERT INTO Cours (nom, sujet) VALUES (:nom, :sujet)";
-            $stmt= $pdo->prepare($sql);
-            $stmt->execute($data);
-            $data = [
-                'lecon' => $lecon,
-            ];
-
-            $pdo = connecDataBase();
-            $sql = "INSERT INTO Lecon (apprentissage) VALUES (:lecon)";
-            $stmt= $pdo->prepare($sql);
-            $stmt->execute($data);
-            if(getIdLecon() != NULL)
-            {
-                $data = [
-                    'idLecon' => $quest.getIdLecon(),
-                    'question' => $ques.getQuestion(),
-                    'reponse' => $quest.getReponse(),
-                ];
-            }
-            else {
-                $data = [
-                    'idLecon' => 'NULL',
-                    'question' => $ques.getQuestion(),
-                    'reponse' => $quest.getReponse(),
-                ];
-            }
-            $pdo = connecDataBase();
-            $sql = "INSERT INTO Question () VALUES (:lecon)";
+            $sql = "INSERT INTO Cours (nom) VALUES (:nom)";
             $stmt= $pdo->prepare($sql);
             $stmt->execute($data);
         }

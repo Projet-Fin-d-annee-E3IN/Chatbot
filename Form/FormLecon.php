@@ -1,9 +1,9 @@
-<?php include_once 'Lecon.php'?> 
+<?php require_once '../Connexion.php'?> 
 
 
 <html lang="fr">
     <h1>Saisie des leçon du cours</h1>
-<form action="ControllerLecon.php" method="post">
+<form action="FormLecon.traitement.php" method="post">
  <p class="blocktext">
  <a>Selectionner a quelle cours appartien cette lecon</a>
  <br>
@@ -24,7 +24,7 @@
 <br>
     <a>Nom de la leçon :</a>
  </br>
-    <input type="text" name="nom">
+    <input type="text" name="nomLecon">
 </br>
 </br>
 <a>Veuillez saisir le cours :</a>
@@ -33,7 +33,7 @@
 </br>
 </br>
 <input type="submit" name="lecon" value="Autre leçon">
-<input type="submit" name="lecon" value="Passer au Question">
+<input type="submit" name="lecon" value="Question Leçon">
 <input type="submit" name="lecon" value="Cours fini">
 </p>
 </form>	

@@ -17,4 +17,33 @@ function connecDataBase(){
     }
     return $pdo;
 }
+
+function listCours() {
+    $lesLecons = array();
+    $pdo = connecDataBase();
+    
+    if ($pdo != NULL)
+    {
+        $req = 'SELECT * FROM cours';
+        $pdoStatement = $pdo->query($req);
+        $lesLecons = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    return $lesLecons;
+}
+
+function listNotion() {
+    session_start();
+    $lesLecons = array();
+    $pdo = connecDataBase();
+    $idCours = $_SESSION['idCours'];
+    if ($pdo != NULL)
+    {
+        $req = "SELECT * FROM lecon WHERE idCours = $idCours";
+        $pdoStatement = $pdo->query($req);
+        $lesLecons = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    return $lesLecons;
+}
 ?>

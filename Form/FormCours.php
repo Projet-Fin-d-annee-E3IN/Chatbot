@@ -1,6 +1,6 @@
 <html lang="fr">
     <h1>Saisie d'un cours</h1>
-<form action="FormLecon.php" method="post">
+<form action="FormCours.traitment.php" method="post">
  <p class="blocktext">
     <a>Nom du cours:</a>
  </br>
