@@ -19,7 +19,7 @@ $adapter = new FilesystemAdapter();
 
 $botman = BotManFactory::create($config, new SymfonyCache($adapter));
 
-$botman->hears('Bonjour', function($bot) {
+$botman->hears('Hello', function($bot) {
     
     $bot->startConversation(new OnboardingConversation);
     
