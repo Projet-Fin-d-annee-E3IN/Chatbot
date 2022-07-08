@@ -39,7 +39,7 @@ class Question
         $this->idLecon=$idLecon;
     }
     
-
+    //Créer une question
     function addQuestion(){
         $pdo = connecDataBase();
         $data = [
@@ -51,7 +51,9 @@ class Question
         $stmt= $pdo->prepare($sql);
         $stmt->execute($data);
     }
+    //Supprimer la question
     function deleteQuestion($idQuestion){
+        //Pas besoin de supprimer d'autre objet car aucune clé étrangère ne pointe sur les questions
         $pdo = connecDataBase();
         $data = [
             ':idQuestion'=>$idQuestion,
@@ -60,6 +62,7 @@ class Question
         $stmt= $pdo->prepare($sql);
         $stmt->execute($data);
     }
+    //Modifier les questions
     function updateQuestion($reponse, $quest){
         $pdo = connecDataBase();
         $data = [

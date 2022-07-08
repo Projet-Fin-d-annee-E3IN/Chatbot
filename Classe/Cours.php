@@ -1,67 +1,84 @@
 <?php
 include '../Connexion.php';
-    class Cours
+class Cours
+{
+    public $idCours;
+    public $nom;
+
+
+    function __construct($nom) 
     {
-        public $idCours;
-        public $nom;
-        public $lecon;
-
-
-        function __construct($nom) 
-        {
-            $this->nom = $nom;
-            $this->lecon = [];
-        }
-
-        public function getNom(){
-            return $this->nom;
-        }
-
-        public function setNom($nom){
-            $this->nom = $nom;
-        }
-
-        function addCours(){
-            $pdo = connecDataBase();
-            $data = [
-                ':nom' => $this->nom,
-            ];
-            $sql = "INSERT INTO Cours (nom) VALUES (:nom)";
-            $stmt= $pdo->prepare($sql);
-            $stmt->execute($data);
-        }
-        function deleteCours($id){
-            
-        }
-        function updateCours($id, $nom, $sujet, $quest){
-
-        }
-        function listeCours(){
-
-        }
-
-        function addQuestion($quest){
-            $pdo = connecDataBase();
-            // Definir lorsque l'on de ne veut pas modifier une valeur
-            if($nom == NULL){
-                $nom = getNom();
-            }
-            if($sujet == NULL){
-                $sujet = getSujet();
-            }
-            if($sujet == NULL){
-                $quest = getQuestion();
-            }
-            $data = [
-                'nom' => $nom,
-                'sujet' => $sujet,
-                'quest' => $quest,
-            ];
-        }
-
-        function getQuestion(){
-
-        }
-        
+        $this->nom = $nom;
     }
+
+    public function getNom(){
+        return $this->nom;
+    }
+
+    public function setNom($nom){
+        $this->nom = $nom;
+    }
+
+
+    //Recupérer la liste des leçons du cours
+    function getListLecons(){
+        $lesCours = array();
+        $pdo = connecDataBase();
+        $req = 'SELECT L.* FROM Lecon L, Cours C WHERE C.idCours = L.idCours';
+        $pdoStatement = $pdo->query($req);
+        $lesCours = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
+        return $listeLecons;
+    }
+
+//Ajouter un cours
+    function addCours(){
+        $pdo = connecDataBase();
+        $data = [
+            ':nom' => $this->nom
+        ];
+        $sql = "INSERT INTO Cours (nom) VALUES (:nom)";
+        $stmt= $pdo->prepare($sql);
+        $stmt->execute($data);
+    }
+
+    function deleteCours($idCours){
+        
+        //Supprimer la leçon pour pouvoir supprimer le cours
+        $listeLecons = getListLecons();
+        foreach($listeLecons as $lecon){
+            deleteLecon($lecon['idLecon']);
+        }
+
+        $pdo = connecDataBase();
+        //Bind les données pour pouvoir les rajouter dans la requête 
+        $data = [
+            ':idCours'=>$idCours,
+        ];
+        //Créer la requête
+        $sql = "DELETE FROM Cours WHERE idCours=:idCours";
+        $stmt= $pdo->prepare($sql);
+        //Envoyer la requête avec les binds que l'on à créé précédement
+        $stmt->execute($data);
+    }
+    //Modifier les valeurs du cours 
+    function updateCours($nom, $sujet){
+        $pdo = connecDataBase();
+        $data = [
+            ':idCours'=>$this->idCours,
+            ':nom'=>$nom,
+            ':sujet'=>$sujet,
+        ];
+        $sql = "UPDATE Cours SET nom=:nom, sujet=:sujet WHERE idCours=:idCours";
+        $stmt= $pdo->prepare($sql);
+        $stmt->execute($data);
+    }
+
+
+    //Pouvoir supprimer une leçon dans les cours
+    function deleteLecon($id){
+        $lecon = new Lecon('','');
+        $lecon.deleteLecon($id);
+    }
+    
+}
 ?>

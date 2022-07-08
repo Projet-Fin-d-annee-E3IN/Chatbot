@@ -39,7 +39,7 @@ class Lecon
     function setIdCours($idCours){
         $this->idCours=$idCours;
     }
-
+    //Récupérer la liste des questions lié à l'exercice
     function getListQuestions(){
         $lesLecons = array();
         $pdo = connecDataBase();
@@ -48,7 +48,7 @@ class Lecon
         $lesLecons = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
         return $lesLecons;
     }
-
+    //Créer une leçon
     function addQuestion()
     {
         $pdo = connecDataBase();
@@ -61,7 +61,7 @@ class Lecon
         $stmt= $pdo->prepare($sql);
         $stmt->execute($data);
     }
-
+    //Supprimer une leçon
     function deleteLecon($idLecon)
     {
         //Supprimer les questions pour pouvoir supprimer la leçon
@@ -79,7 +79,7 @@ class Lecon
         $stmt->execute($data);
 
     }
-
+    //Modifier la leçon
     function updateLecon(){
         $pdo = connecDataBase();
         $data = [
