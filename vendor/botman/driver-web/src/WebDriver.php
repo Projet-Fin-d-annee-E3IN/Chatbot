@@ -2,23 +2,21 @@
 
 namespace BotMan\Drivers\Web;
 
-use BotMan\BotMan\Drivers\Events\GenericEvent;
+use BotMan\BotMan\Users\User;
+use Illuminate\Support\Collection;
 use BotMan\BotMan\Drivers\HttpDriver;
 use BotMan\BotMan\Interfaces\WebAccess;
-use BotMan\BotMan\Messages\Attachments\Audio;
+use BotMan\BotMan\Messages\Incoming\Answer;
 use BotMan\BotMan\Messages\Attachments\File;
+use BotMan\BotMan\Messages\Attachments\Audio;
 use BotMan\BotMan\Messages\Attachments\Image;
 use BotMan\BotMan\Messages\Attachments\Video;
-use BotMan\BotMan\Messages\Incoming\Answer;
-use BotMan\BotMan\Messages\Incoming\IncomingMessage;
-use BotMan\BotMan\Messages\Outgoing\OutgoingMessage;
 use BotMan\BotMan\Messages\Outgoing\Question;
-use BotMan\BotMan\Users\User;
-use BotMan\Drivers\Web\Extras\TypingIndicator;
-use Illuminate\Support\Collection;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use BotMan\BotMan\Messages\Incoming\IncomingMessage;
+use BotMan\BotMan\Messages\Outgoing\OutgoingMessage;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class WebDriver extends HttpDriver
 {
@@ -46,7 +44,7 @@ class WebDriver extends HttpDriver
     protected $files = [];
 
     /**
-     * @param  Request  $request
+     * @param Request $request
      */
     public function buildPayload(Request $request)
     {
@@ -57,7 +55,7 @@ class WebDriver extends HttpDriver
     }
 
     /**
-     * @param  IncomingMessage  $matchingMessage
+     * @param IncomingMessage $matchingMessage
      * @return \BotMan\BotMan\Users\User
      */
     public function getUser(IncomingMessage $matchingMessage)
@@ -76,34 +74,7 @@ class WebDriver extends HttpDriver
     }
 
     /**
-     * @param  IncomingMessage  $matchingMessage
-     * @return void
-     */
-    public function types(IncomingMessage $matchingMessage)
-    {
-        $this->replies[] = [
-            'message' => TypingIndicator::create(),
-            'additionalParameters' => [],
-        ];
-    }
-
-    /**
-     * Send a typing indicator and wait for the given amount of seconds.
-     *
-     * @param  IncomingMessage  $matchingMessage
-     * @param  float  $seconds
-     * @return mixed
-     */
-    public function typesAndWaits(IncomingMessage $matchingMessage, float $seconds)
-    {
-        $this->replies[] = [
-            'message' => TypingIndicator::create($seconds),
-            'additionalParameters' => [],
-        ];
-    }
-
-    /**
-     * @param  IncomingMessage  $message
+     * @param  IncomingMessage $message
      * @return \BotMan\BotMan\Messages\Incoming\Answer
      */
     public function getConversationAnswer(IncomingMessage $message)
@@ -119,21 +90,6 @@ class WebDriver extends HttpDriver
             ->setValue($this->event->get('value', $message->getText()))
             ->setMessage($message)
             ->setInteractiveReply($interactive);
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasMatchingEvent()
-    {
-        $event = false;
-
-        if ($this->event->has('eventData')) {
-            $event = new GenericEvent($this->event->get('eventData'));
-            $event->setName($this->event->get('eventName'));
-        }
-
-        return $event;
     }
 
     /**
@@ -167,9 +123,9 @@ class WebDriver extends HttpDriver
     }
 
     /**
-     * @param  string|Question|OutgoingMessage  $message
-     * @param  IncomingMessage  $matchingMessage
-     * @param  array  $additionalParameters
+     * @param string|Question|OutgoingMessage $message
+     * @param IncomingMessage $matchingMessage
+     * @param array $additionalParameters
      * @return Response
      */
     public function buildServicePayload($message, $matchingMessage, $additionalParameters = [])
@@ -186,7 +142,7 @@ class WebDriver extends HttpDriver
     }
 
     /**
-     * @param  mixed  $payload
+     * @param mixed $payload
      * @return Response
      */
     public function sendPayload($payload)
@@ -233,14 +189,14 @@ class WebDriver extends HttpDriver
         // Reset replies
         $this->replies = [];
 
-        (new Response(json_encode([
+        Response::create(json_encode([
             'status' => $this->replyStatusCode,
             'messages' => $messages,
         ]), $this->replyStatusCode, [
             'Content-Type' => 'application/json',
             'Access-Control-Allow-Credentials' => true,
             'Access-Control-Allow-Origin' => '*',
-        ]))->send();
+        ])->send();
     }
 
     /**
@@ -254,9 +210,9 @@ class WebDriver extends HttpDriver
     /**
      * Low-level method to perform driver specific API requests.
      *
-     * @param  string  $endpoint
-     * @param  array  $parameters
-     * @param  \BotMan\BotMan\Messages\Incoming\IncomingMessage  $matchingMessage
+     * @param string $endpoint
+     * @param array $parameters
+     * @param \BotMan\BotMan\Messages\Incoming\IncomingMessage $matchingMessage
      * @return void
      */
     public function sendRequest($endpoint, array $parameters, IncomingMessage $matchingMessage)
@@ -267,7 +223,7 @@ class WebDriver extends HttpDriver
     /**
      * Add potential attachments to the message object.
      *
-     * @param  IncomingMessage  $incomingMessage
+     * @param IncomingMessage $incomingMessage
      * @return IncomingMessage
      */
     protected function addAttachments($incomingMessage)
@@ -329,7 +285,7 @@ class WebDriver extends HttpDriver
 
     /**
      * @param $file
-     * @param  string  $mime
+     * @param string $mime
      * @return string
      */
     protected function getDataURI($file, $mime = '')

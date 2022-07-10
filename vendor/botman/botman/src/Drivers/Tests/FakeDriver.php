@@ -157,7 +157,7 @@ class FakeDriver implements DriverInterface, VerifiesService
         $this->botMessages[] = $payload;
         $text = method_exists($payload, 'getText') ? $payload->getText() : '';
 
-        return new Response(json_encode($text));
+        return Response::create(json_encode($text));
     }
 
     public function setName($name)
@@ -173,18 +173,6 @@ class FakeDriver implements DriverInterface, VerifiesService
     public function types(IncomingMessage $matchingMessage)
     {
         $this->botIsTyping = true;
-    }
-
-    /**
-     * Send a typing indicator and wait for the given amount of seconds.
-     * @param IncomingMessage $matchingMessage
-     * @param float $seconds
-     * @return mixed
-     */
-    public function typesAndWaits(IncomingMessage $matchingMessage, float $seconds)
-    {
-        $this->types($matchingMessage);
-        usleep($seconds * 1000000);
     }
 
     /**
@@ -214,7 +202,7 @@ class FakeDriver implements DriverInterface, VerifiesService
     }
 
     /**
-     * @return bool|GenericEvent
+     * @return bool
      */
     public function hasMatchingEvent()
     {

@@ -15,8 +15,6 @@ use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\CacheItem;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
-use Symfony\Component\Cache\PruneableInterface;
-use Symfony\Component\Cache\ResettableInterface;
 
 /**
  * Chains several adapters together.
@@ -26,17 +24,16 @@ use Symfony\Component\Cache\ResettableInterface;
  *
  * @author Kévin Dunglas <dunglas@gmail.com>
  */
-class ChainAdapter implements AdapterInterface, PruneableInterface, ResettableInterface
+class ChainAdapter implements AdapterInterface
 {
-    private $adapters = [];
-    private $adapterCount;
-    private $syncItem;
+    private $adapters = array();
+    private $saveUp;
 
     /**
-     * @param CacheItemPoolInterface[] $adapters        The ordered list of adapters used to fetch cached items
-     * @param int                      $defaultLifetime The default lifetime of items propagated from lower adapters to upper ones
+     * @param CacheItemPoolInterface[] $adapters    The ordered list of adapters used to fetch cached items
+     * @param int                      $maxLifetime The max lifetime of items propagated from lower adapters to upper ones
      */
-    public function __construct(array $adapters, $defaultLifetime = 0)
+    public function __construct(array $adapters, $maxLifetime = 0)
     {
         if (!$adapters) {
             throw new InvalidArgumentException('At least one adapter must be specified.');
@@ -44,10 +41,7 @@ class ChainAdapter implements AdapterInterface, PruneableInterface, ResettableIn
 
         foreach ($adapters as $adapter) {
             if (!$adapter instanceof CacheItemPoolInterface) {
-                throw new InvalidArgumentException(sprintf('The class "%s" does not implement the "%s" interface.', \get_class($adapter), CacheItemPoolInterface::class));
-            }
-            if (\in_array(\PHP_SAPI, ['cli', 'phpdbg'], true) && $adapter instanceof ApcuAdapter && !filter_var(ini_get('apc.enable_cli'), \FILTER_VALIDATE_BOOLEAN)) {
-                continue; // skip putting APCu in the chain when the backend is disabled
+                throw new InvalidArgumentException(sprintf('The class "%s" does not implement the "%s" interface.', get_class($adapter), CacheItemPoolInterface::class));
             }
 
             if ($adapter instanceof AdapterInterface) {
@@ -56,18 +50,17 @@ class ChainAdapter implements AdapterInterface, PruneableInterface, ResettableIn
                 $this->adapters[] = new ProxyAdapter($adapter);
             }
         }
-        $this->adapterCount = \count($this->adapters);
 
-        $this->syncItem = \Closure::bind(
-            static function ($sourceItem, $item) use ($defaultLifetime) {
-                $item->value = $sourceItem->value;
-                $item->isHit = $sourceItem->isHit;
+        $this->saveUp = \Closure::bind(
+            function ($adapter, $item) use ($maxLifetime) {
+                $origDefaultLifetime = $item->defaultLifetime;
 
-                if (0 < $defaultLifetime) {
-                    $item->expiresAfter($defaultLifetime);
+                if (0 < $maxLifetime && ($origDefaultLifetime <= 0 || $maxLifetime < $origDefaultLifetime)) {
+                    $item->defaultLifetime = $maxLifetime;
                 }
 
-                return $item;
+                $adapter->save($item);
+                $item->defaultLifetime = $origDefaultLifetime;
             },
             null,
             CacheItem::class
@@ -79,21 +72,18 @@ class ChainAdapter implements AdapterInterface, PruneableInterface, ResettableIn
      */
     public function getItem($key)
     {
-        $syncItem = $this->syncItem;
-        $misses = [];
+        $saveUp = $this->saveUp;
 
         foreach ($this->adapters as $i => $adapter) {
             $item = $adapter->getItem($key);
 
             if ($item->isHit()) {
                 while (0 <= --$i) {
-                    $this->adapters[$i]->save($syncItem($item, $misses[$i]));
+                    $saveUp($this->adapters[$i], $item);
                 }
 
                 return $item;
             }
-
-            $misses[$i] = $item;
         }
 
         return $item;
@@ -102,15 +92,14 @@ class ChainAdapter implements AdapterInterface, PruneableInterface, ResettableIn
     /**
      * {@inheritdoc}
      */
-    public function getItems(array $keys = [])
+    public function getItems(array $keys = array())
     {
         return $this->generateItems($this->adapters[0]->getItems($keys), 0);
     }
 
     private function generateItems($items, $adapterIndex)
     {
-        $missing = [];
-        $misses = [];
+        $missing = array();
         $nextAdapterIndex = $adapterIndex + 1;
         $nextAdapter = isset($this->adapters[$nextAdapterIndex]) ? $this->adapters[$nextAdapterIndex] : null;
 
@@ -119,18 +108,17 @@ class ChainAdapter implements AdapterInterface, PruneableInterface, ResettableIn
                 yield $k => $item;
             } else {
                 $missing[] = $k;
-                $misses[$k] = $item;
             }
         }
 
         if ($missing) {
-            $syncItem = $this->syncItem;
+            $saveUp = $this->saveUp;
             $adapter = $this->adapters[$adapterIndex];
             $items = $this->generateItems($nextAdapter->getItems($missing), $nextAdapterIndex);
 
             foreach ($items as $k => $item) {
                 if ($item->isHit()) {
-                    $adapter->save($syncItem($item, $misses[$k]));
+                    $saveUp($adapter, $item);
                 }
 
                 yield $k => $item;
@@ -158,10 +146,9 @@ class ChainAdapter implements AdapterInterface, PruneableInterface, ResettableIn
     public function clear()
     {
         $cleared = true;
-        $i = $this->adapterCount;
 
-        while ($i--) {
-            $cleared = $this->adapters[$i]->clear() && $cleared;
+        foreach ($this->adapters as $adapter) {
+            $cleared = $adapter->clear() && $cleared;
         }
 
         return $cleared;
@@ -173,10 +160,9 @@ class ChainAdapter implements AdapterInterface, PruneableInterface, ResettableIn
     public function deleteItem($key)
     {
         $deleted = true;
-        $i = $this->adapterCount;
 
-        while ($i--) {
-            $deleted = $this->adapters[$i]->deleteItem($key) && $deleted;
+        foreach ($this->adapters as $adapter) {
+            $deleted = $adapter->deleteItem($key) && $deleted;
         }
 
         return $deleted;
@@ -188,10 +174,9 @@ class ChainAdapter implements AdapterInterface, PruneableInterface, ResettableIn
     public function deleteItems(array $keys)
     {
         $deleted = true;
-        $i = $this->adapterCount;
 
-        while ($i--) {
-            $deleted = $this->adapters[$i]->deleteItems($keys) && $deleted;
+        foreach ($this->adapters as $adapter) {
+            $deleted = $adapter->deleteItems($keys) && $deleted;
         }
 
         return $deleted;
@@ -203,10 +188,9 @@ class ChainAdapter implements AdapterInterface, PruneableInterface, ResettableIn
     public function save(CacheItemInterface $item)
     {
         $saved = true;
-        $i = $this->adapterCount;
 
-        while ($i--) {
-            $saved = $this->adapters[$i]->save($item) && $saved;
+        foreach ($this->adapters as $adapter) {
+            $saved = $adapter->save($item) && $saved;
         }
 
         return $saved;
@@ -218,10 +202,9 @@ class ChainAdapter implements AdapterInterface, PruneableInterface, ResettableIn
     public function saveDeferred(CacheItemInterface $item)
     {
         $saved = true;
-        $i = $this->adapterCount;
 
-        while ($i--) {
-            $saved = $this->adapters[$i]->saveDeferred($item) && $saved;
+        foreach ($this->adapters as $adapter) {
+            $saved = $adapter->saveDeferred($item) && $saved;
         }
 
         return $saved;
@@ -233,40 +216,11 @@ class ChainAdapter implements AdapterInterface, PruneableInterface, ResettableIn
     public function commit()
     {
         $committed = true;
-        $i = $this->adapterCount;
 
-        while ($i--) {
-            $committed = $this->adapters[$i]->commit() && $committed;
+        foreach ($this->adapters as $adapter) {
+            $committed = $adapter->commit() && $committed;
         }
 
         return $committed;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function prune()
-    {
-        $pruned = true;
-
-        foreach ($this->adapters as $adapter) {
-            if ($adapter instanceof PruneableInterface) {
-                $pruned = $adapter->prune() && $pruned;
-            }
-        }
-
-        return $pruned;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function reset()
-    {
-        foreach ($this->adapters as $adapter) {
-            if ($adapter instanceof ResettableInterface) {
-                $adapter->reset();
-            }
-        }
     }
 }

@@ -49,7 +49,7 @@ class NullAdapter implements AdapterInterface
     /**
      * {@inheritdoc}
      */
-    public function getItems(array $keys = [])
+    public function getItems(array $keys = array())
     {
         return $this->generateItems($keys);
     }

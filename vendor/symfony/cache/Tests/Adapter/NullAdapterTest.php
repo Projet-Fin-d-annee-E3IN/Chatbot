@@ -11,14 +11,13 @@
 
 namespace Symfony\Component\Cache\Tests\Adapter;
 
-use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Symfony\Component\Cache\Adapter\NullAdapter;
 
 /**
  * @group time-sensitive
  */
-class NullAdapterTest extends TestCase
+class NullAdapterTest extends \PHPUnit_Framework_TestCase
 {
     public function createCachePool()
     {
@@ -43,7 +42,7 @@ class NullAdapterTest extends TestCase
     {
         $adapter = $this->createCachePool();
 
-        $keys = ['foo', 'bar', 'baz', 'biz'];
+        $keys = array('foo', 'bar', 'baz', 'biz');
 
         /** @var CacheItemInterface[] $items */
         $items = $adapter->getItems($keys);
@@ -53,7 +52,7 @@ class NullAdapterTest extends TestCase
             $itemKey = $item->getKey();
 
             $this->assertEquals($itemKey, $key, 'Keys must be preserved when fetching multiple items');
-            $this->assertContains($key, $keys, 'Cache key can not change.');
+            $this->assertTrue(in_array($key, $keys), 'Cache key can not change.');
             $this->assertFalse($item->isHit());
 
             // Remove $key for $keys
@@ -89,7 +88,7 @@ class NullAdapterTest extends TestCase
 
     public function testDeleteItems()
     {
-        $this->assertTrue($this->createCachePool()->deleteItems(['key', 'foo', 'bar']));
+        $this->assertTrue($this->createCachePool()->deleteItems(array('key', 'foo', 'bar')));
     }
 
     public function testSave()

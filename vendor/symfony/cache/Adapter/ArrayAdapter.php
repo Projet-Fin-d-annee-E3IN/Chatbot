@@ -13,19 +13,20 @@ namespace Symfony\Component\Cache\Adapter;
 
 use Psr\Cache\CacheItemInterface;
 use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Cache\CacheItem;
-use Symfony\Component\Cache\ResettableInterface;
-use Symfony\Component\Cache\Traits\ArrayTrait;
 
 /**
  * @author Nicolas Grekas <p@tchwork.com>
  */
-class ArrayAdapter implements AdapterInterface, LoggerAwareInterface, ResettableInterface
+class ArrayAdapter implements AdapterInterface, LoggerAwareInterface
 {
-    use ArrayTrait;
+    use LoggerAwareTrait;
 
+    private $storeSerialized;
+    private $values = array();
+    private $expiries = array();
     private $createCacheItem;
-    private $defaultLifetime;
 
     /**
      * @param int  $defaultLifetime
@@ -33,14 +34,14 @@ class ArrayAdapter implements AdapterInterface, LoggerAwareInterface, Resettable
      */
     public function __construct($defaultLifetime = 0, $storeSerialized = true)
     {
-        $this->defaultLifetime = $defaultLifetime;
         $this->storeSerialized = $storeSerialized;
         $this->createCacheItem = \Closure::bind(
-            static function ($key, $value, $isHit) {
+            function ($key, $value, $isHit) use ($defaultLifetime) {
                 $item = new CacheItem();
                 $item->key = $key;
                 $item->value = $value;
                 $item->isHit = $isHit;
+                $item->defaultLifetime = $defaultLifetime;
 
                 return $item;
             },
@@ -67,7 +68,7 @@ class ArrayAdapter implements AdapterInterface, LoggerAwareInterface, Resettable
                 $isHit = false;
             }
         } catch (\Exception $e) {
-            CacheItem::log($this->logger, 'Failed to unserialize key "{key}"', ['key' => $key, 'exception' => $e]);
+            CacheItem::log($this->logger, 'Failed to unserialize key "{key}"', array('key' => $key, 'exception' => $e));
             $this->values[$key] = $value = null;
             $isHit = false;
         }
@@ -79,13 +80,55 @@ class ArrayAdapter implements AdapterInterface, LoggerAwareInterface, Resettable
     /**
      * {@inheritdoc}
      */
-    public function getItems(array $keys = [])
+    public function getItems(array $keys = array())
     {
         foreach ($keys as $key) {
             CacheItem::validateKey($key);
         }
 
-        return $this->generateItems($keys, time(), $this->createCacheItem);
+        return $this->generateItems($keys, time());
+    }
+
+    /**
+     * Returns all cached values, with cache miss as null.
+     *
+     * @return array
+     */
+    public function getValues()
+    {
+        return $this->values;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasItem($key)
+    {
+        CacheItem::validateKey($key);
+
+        return isset($this->expiries[$key]) && ($this->expiries[$key] >= time() || !$this->deleteItem($key));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clear()
+    {
+        $this->values = $this->expiries = array();
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteItem($key)
+    {
+        CacheItem::validateKey($key);
+
+        unset($this->values[$key], $this->expiries[$key]);
+
+        return true;
     }
 
     /**
@@ -113,10 +156,6 @@ class ArrayAdapter implements AdapterInterface, LoggerAwareInterface, Resettable
         $value = $item["\0*\0value"];
         $expiry = $item["\0*\0expiry"];
 
-        if (0 === $expiry) {
-            $expiry = \PHP_INT_MAX;
-        }
-
         if (null !== $expiry && $expiry <= time()) {
             $this->deleteItem($key);
 
@@ -126,18 +165,18 @@ class ArrayAdapter implements AdapterInterface, LoggerAwareInterface, Resettable
             try {
                 $value = serialize($value);
             } catch (\Exception $e) {
-                $type = \is_object($value) ? \get_class($value) : \gettype($value);
-                CacheItem::log($this->logger, 'Failed to save key "{key}" ({type})', ['key' => $key, 'type' => $type, 'exception' => $e]);
+                $type = is_object($value) ? get_class($value) : gettype($value);
+                CacheItem::log($this->logger, 'Failed to save key "{key}" ({type})', array('key' => $key, 'type' => $type, 'exception' => $e));
 
                 return false;
             }
         }
-        if (null === $expiry && 0 < $this->defaultLifetime) {
-            $expiry = time() + $this->defaultLifetime;
+        if (null === $expiry && 0 < $item["\0*\0defaultLifetime"]) {
+            $expiry = time() + $item["\0*\0defaultLifetime"];
         }
 
         $this->values[$key] = $value;
-        $this->expiries[$key] = null !== $expiry ? $expiry : \PHP_INT_MAX;
+        $this->expiries[$key] = null !== $expiry ? $expiry : PHP_INT_MAX;
 
         return true;
     }
@@ -156,5 +195,36 @@ class ArrayAdapter implements AdapterInterface, LoggerAwareInterface, Resettable
     public function commit()
     {
         return true;
+    }
+
+    private function generateItems(array $keys, $now)
+    {
+        $f = $this->createCacheItem;
+
+        foreach ($keys as $i => $key) {
+            try {
+                if (!$isHit = isset($this->expiries[$key]) && ($this->expiries[$key] >= $now || !$this->deleteItem($key))) {
+                    $this->values[$key] = $value = null;
+                } elseif (!$this->storeSerialized) {
+                    $value = $this->values[$key];
+                } elseif ('b:0;' === $value = $this->values[$key]) {
+                    $value = false;
+                } elseif (false === $value = unserialize($value)) {
+                    $this->values[$key] = $value = null;
+                    $isHit = false;
+                }
+            } catch (\Exception $e) {
+                CacheItem::log($this->logger, 'Failed to unserialize key "{key}"', array('key' => $key, 'exception' => $e));
+                $this->values[$key] = $value = null;
+                $isHit = false;
+            }
+            unset($keys[$i]);
+
+            yield $key => $f($key, $value, $isHit);
+        }
+
+        foreach ($keys as $key) {
+            yield $key => $f($key, null, false);
+        }
     }
 }

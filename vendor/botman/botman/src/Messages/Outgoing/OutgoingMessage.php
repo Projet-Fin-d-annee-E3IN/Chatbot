@@ -30,7 +30,7 @@ class OutgoingMessage
      */
     public static function create($message = null, Attachment $attachment = null)
     {
-        return new static($message, $attachment);
+        return new self($message, $attachment);
     }
 
     /**

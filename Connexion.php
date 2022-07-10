@@ -10,7 +10,6 @@ function connecDataBase(){
     try{
     $pdo = new PDO('mysql:host='.$dbhost.';port='.$dbport.';dbname='.$db.'', $dbuser, $dbpasswd);
     $pdo->exec("SET CHARACTER SET utf8");
-    echo 'Je suis co';
     }
     catch(PDOException $e){
         print "Erreur vous êtes non connecté ! erreur en cours : " . $e->getMessage() . "";
@@ -28,7 +27,7 @@ function listCours() {
         $pdoStatement = $pdo->query($req);
         $lesLecons = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+    $pdo = null;
     return $lesLecons;
 }
 
@@ -43,7 +42,34 @@ function listNotion() {
         $pdoStatement = $pdo->query($req);
         $lesLecons = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
     }
+    $pdo = null;
     
     return $lesLecons;
+}
+
+function listNotionForChatBot() {
+    $lesLecons = array();
+    $pdo = connecDataBase();
+    if ($pdo != NULL)
+    {
+        $req = "SELECT * FROM lecon";
+        $pdoStatement = $pdo->query($req);
+        $lesLecons = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    return $lesLecons;
+}
+
+function listQuest() {
+    $lesQuestions = array();
+    $pdo = connecDataBase();
+    if ($pdo != NULL)
+    {
+        $req = "SELECT * FROM question";
+        $pdoStatement = $pdo->query($req);
+        $lesQuestions = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    return $lesQuestions;
 }
 ?>

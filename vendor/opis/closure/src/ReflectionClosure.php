@@ -1,6 +1,6 @@
 <?php
 /* ===========================================================================
- * Copyright (c) 2018-2021 Zindex Software
+ * Copyright (c) 2018-2019 Zindex Software
  *
  * Licensed under the MIT License
  * =========================================================================== */
@@ -35,11 +35,12 @@ class ReflectionClosure extends ReflectionFunction
     /**
      * ReflectionClosure constructor.
      * @param Closure $closure
-     * @param string|null $code This is ignored. Do not use it
+     * @param string|null $code
      * @throws \ReflectionException
      */
     public function __construct(Closure $closure, $code = null)
     {
+        $this->code = $code;
         parent::__construct($closure);
     }
 
@@ -79,6 +80,12 @@ class ReflectionClosure extends ReflectionFunction
 
         $fileName = $this->getFileName();
         $line = $this->getStartLine() - 1;
+
+        $match = ClosureStream::STREAM_PROTO . '://';
+
+        if ($line === 1 && substr($fileName, 0, strlen($match)) === $match) {
+            return $this->code = substr($fileName, strlen($match));
+        }
 
         $className = null;
 
@@ -271,7 +278,7 @@ class ReflectionClosure extends ReflectionFunction
                         case T_CURLY_OPEN:
                         case T_DOLLAR_OPEN_CURLY_BRACES:
                         case '{':
-                            $code .= is_array($token) ? $token[1] : $token;
+                            $code .= '{';
                             $open++;
                             break;
                         case '}':

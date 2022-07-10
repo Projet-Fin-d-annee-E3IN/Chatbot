@@ -17,9 +17,6 @@ class IncomingMessage
     /** @var string */
     protected $recipient;
 
-    /** @var string */
-    protected $bot_id;
-
     /** @var array */
     protected $images = [];
 
@@ -47,13 +44,12 @@ class IncomingMessage
     /** @var bool */
     protected $isFromBot = false;
 
-    public function __construct($message, $sender, $recipient, $payload = null, $bot_id = '')
+    public function __construct($message, $sender, $recipient, $payload = null)
     {
         $this->message = $message;
         $this->sender = $sender;
         $this->recipient = $recipient;
         $this->payload = $payload;
-        $this->bot_id = $bot_id;
     }
 
     /**
@@ -93,7 +89,7 @@ class IncomingMessage
      */
     public function getConversationIdentifier()
     {
-        return 'conversation-'.$this->bot_id.sha1($this->getSender()).'-'.sha1($this->getRecipient());
+        return 'conversation-'.sha1($this->getSender()).'-'.sha1($this->getRecipient());
     }
 
     /**
@@ -103,7 +99,7 @@ class IncomingMessage
      */
     public function getOriginatedConversationIdentifier()
     {
-        return 'conversation-'.$this->bot_id.sha1($this->getSender()).'-'.sha1('');
+        return 'conversation-'.sha1($this->getSender()).'-'.sha1('');
     }
 
     /**

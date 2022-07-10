@@ -49,7 +49,7 @@ class NullDriver extends HttpDriver
     /**
      * Retrieve the chat message.
      *
-     * @return array
+     * @return string
      */
     public function getMessages()
     {
