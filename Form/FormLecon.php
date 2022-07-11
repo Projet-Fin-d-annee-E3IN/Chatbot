@@ -33,9 +33,9 @@
     <textarea type="text" name="textLecon" style="text-align : center" ></textarea>
 </br>
 </br>
-<input type="submit" name="lecon" value="Autre leçon">
-<input type="submit" name="lecon" value="Question Leçon">
-<input type="submit" name="lecon" value="Cours fini">
+<input type="submit" name="lecon" value="Nouvelle leçon">
+<input type="submit" name="lecon" value="Passer au question du cours">
+<input type="submit" name="lecon" value="Creation Cours fini">
 </p>
 </form>	
 

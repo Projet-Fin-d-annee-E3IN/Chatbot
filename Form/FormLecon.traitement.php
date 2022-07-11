@@ -2,7 +2,7 @@
 include_once '../Classe/Lecon.php';
 session_start();
 
-if ($_POST['lecon'] == 'Question Leçon')
+if ($_POST['lecon'] == 'Passer au question du cours')
 { 
     if($_POST['nomLecon'] != null && $_POST['textLecon'] !=null && $_POST['cours'] != null)
 {    $_SESSION['idCours'] = $_POST['cours'];
@@ -11,10 +11,11 @@ if ($_POST['lecon'] == 'Question Leçon')
 
     header( "Location:http://localhost/chatbot/Form/FormQuestion.php" );
 }else{
+    $_SESSION['idCours'] = $_POST['cours'];
     header( "Location:http://localhost/chatbot/Form/FormQuestion.php" );
 }
 }
-elseif ($_POST['lecon'] == 'Autre leçon')
+elseif ($_POST['lecon'] == 'Nouvelle leçon')
 { 
     if($_POST['nomLecon'] != null && $_POST['textLecon'] !=null && $_POST['cours'] != null)
 {   
@@ -24,6 +25,6 @@ elseif ($_POST['lecon'] == 'Autre leçon')
 
     header( "Location:http://localhost/chatbot/Form/FormLecon.php" );
 }
-elseif ($_POST['lecon'] == 'Cours fini'){
+elseif ($_POST['lecon'] == 'Creation Cours fini'){
     header( "Location:http://localhost/chatbot/Form/FormCours.php" ); 
 }
