@@ -1,6 +1,7 @@
 
 <?php require_once '../Connexion.php'?> 
 <!DOCTYPE html>
+<title>Question LAB</title>
 <html lang="fr">
     <h1>Saisie des question de la leçon</h1>
 <form action="FormQuestion.traitement.php" method="post">

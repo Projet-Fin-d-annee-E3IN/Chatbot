@@ -87,12 +87,6 @@ class Lecon
         $stmt= $pdo->prepare($sql);
         $stmt->execute($data);
     }
-
-    //Pouvoir supprimer une question dans les leçons
-    function deleteQuestion($id){
-        $quest = new Question();
-        $quest.deleteQuestion($id);
-    }
 }
 
 

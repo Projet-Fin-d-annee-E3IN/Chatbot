@@ -70,13 +70,6 @@ class Cours
         $stmt= $pdo->prepare($sql);
         $stmt->execute($data);
     }
-
-
-    //Pouvoir supprimer une leçon dans les cours
-    function deleteLecon($id){
-        $lecon = new Lecon('','');
-        $lecon.deleteLecon($id);
-    }
     
 }
 ?>

@@ -19,7 +19,7 @@ class OnboardingConversation extends Conversation
 
     //Fonction AskCours demmande quelle cours l'etudiant veut suivre
 
-    protected function askCours(){;
+    protected function askCours(){
         
 
         foreach ($_SESSION['cours'] as $cours) {
@@ -33,7 +33,6 @@ class OnboardingConversation extends Conversation
         // Detect if button was clicked:
         if ($answer->isInteractiveMessageReply()) {
             $selectedValue = $answer->getValue(); // will be either 'yes' or 'no'
-            $selectedText = $answer->getText(); // will be either 'Of course' or 'Hell no!'
             // $this->say($selectedValue);
             $this->botNotion($selectedValue);
         }
@@ -57,9 +56,6 @@ class OnboardingConversation extends Conversation
         // Detect if button was clicked:
         if ($answer->isInteractiveMessageReply()) {
             $selectedValue = $answer->getValue(); // will be either 'yes' or 'no'
-            $selectedText = $answer->getText(); // will be either 'Of course' or 'Hell no!'
-            $questionNotion;
-            $questionNotionArray;
             if($selectedValue == "Return Cours"){
                 $this->askCours();
             }
@@ -73,15 +69,7 @@ class OnboardingConversation extends Conversation
                 $this->botQuestion($selectedValue);
                          
             }
-            }
-
-
-
-        
-
-            // $this->botNotion($selectedValue);
-        
-
+            }       
     });
 
     }
@@ -106,7 +94,6 @@ class OnboardingConversation extends Conversation
         // Detect if button was clicked:
         if ($answer->isInteractiveMessageReply()) {
             $selectedValue = $answer->getValue(); // will be either 'yes' or 'no'
-            $selectedText = $answer->getText(); // will be either 'Of course' or 'Hell no!'
             // $this->say($selectedValue);
             if($selectedValue == "Return Cours"){
                 $this->askCours();

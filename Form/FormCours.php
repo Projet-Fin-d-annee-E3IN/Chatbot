@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<title>Cours LAB</title>
 <html lang="fr">
     <h1>Saisie d'un cours</h1>
 <form action="FormCours.traitment.php" method="post">
