@@ -16,6 +16,8 @@ elseif ($_POST['FormQuestion'] == 'retourner aux leçon')
         $test = new Question($_POST['nomLecon'],$_POST['textLecon'],$_POST['cours']);
         $rep = $test->addQuestion();
         header( "Location:http://localhost/chatbot/Form/FormLecon.php" );
+    }else{
+        header( "Location:http://localhost/chatbot/Form/FormLecon.php" );
     }
 
 }

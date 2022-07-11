@@ -5,6 +5,6 @@ include_once '../Classe/Cours.php';
         $rep = $test->addCours();
         header( "Location:http://localhost/chatbot/Form/FormLecon.php" );
     }else{
-        header( "Location:http://localhost/chatbot/Form/FormCours.php" );
+        header( "Location:http://localhost/chatbot/Form/FormLecon.php" );
     }
 

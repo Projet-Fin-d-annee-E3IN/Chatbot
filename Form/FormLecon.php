@@ -14,7 +14,7 @@
     foreach ($listCours as $cours):
         ?>
 
-        <option value="<?php echo $cours['id_cour'] ?>">
+        <option value="<?php echo $cours['idCours'] ?>">
             <?php echo $cours['nom'] ?>
         </option>
 

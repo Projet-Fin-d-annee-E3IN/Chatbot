@@ -23,7 +23,7 @@ class OnboardingConversation extends Conversation
         
 
         foreach ($_SESSION['cours'] as $cours) {
-            $button = Button::create($cours['nom'])->value($cours['id_cour']);
+            $button = Button::create($cours['nom'])->value($cours['idCours']);
             $buttonArray[] = $button;
         }
         $this->say('Welcome to our online course chat bot is at your disposal to help you during your learning');
@@ -64,7 +64,12 @@ class OnboardingConversation extends Conversation
                 $this->askCours();
             }
             else{
-
+                foreach ($_SESSION['lecon'] as $lecons) {
+                    if($selectedValue == $lecons['idLecon']){
+                        $textNotion = $lecons['text'];
+                    }
+                }
+                $this->say($textNotion);
                 $this->botQuestion($selectedValue);
                          
             }
@@ -106,7 +111,7 @@ class OnboardingConversation extends Conversation
         $conteur = 1;
         foreach ($_SESSION['quest'] as $quest) {
             if($quest['idLecon'] == $idLecon){
-                $button = Button::create($conteur)->value($quest['id_Question']);
+                $button = Button::create($conteur)->value($quest['idQuestion']);
                 $buttonArrayQ[] = $button;
                 $conteur = $conteur + 1;
             }
@@ -142,7 +147,7 @@ class OnboardingConversation extends Conversation
         $question;
         $_SESSION['idQuest'] = $idQuest;
         foreach ($_SESSION['quest'] as $quest) {
-            if($quest['id_Question'] == $idQuest){
+            if($quest['idQuestion'] == $idQuest){
                 $question = $quest;
                 $_SESSION['rep'] = $quest['reponse'];
             }

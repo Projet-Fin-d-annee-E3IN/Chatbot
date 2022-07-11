@@ -11,7 +11,7 @@ if ($_POST['lecon'] == 'Question Leçon')
 
     header( "Location:http://localhost/chatbot/Form/FormQuestion.php" );
 }else{
-    header( "Location:http://localhost/chatbot/Form/FormLecon.php" );
+    header( "Location:http://localhost/chatbot/Form/FormQuestion.php" );
 }
 }
 elseif ($_POST['lecon'] == 'Autre leçon')
