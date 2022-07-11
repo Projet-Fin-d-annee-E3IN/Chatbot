@@ -73,26 +73,6 @@ class OnboardingConversation extends Conversation
                 $this->botQuestion($selectedValue);
                          
             }
-                // else{
-                //     $question = Question::create('Select')
-                //     ->addButtons([
-                //         Button::create('Next Notion')->value('notion'),
-                //         Button::create('Return Select lesson')->value('lesson'),
-                //     ]);
-            
-                // $this->ask($question, function (Answer $answer) {
-                //     // Detect if button was clicked:
-                //     if ($answer->isInteractiveMessageReply()) {
-                //         $selectedValue = $answer->getValue(); // will be either 'yes' or 'no'
-                //         $selectedText = $answer->getText(); // will be either 'Of course' or 'Hell no!'
-                //         if($selectedValue == 'notion'){
-                //             $this->botNotion($idCours);
-                //         }elseif($selectedValue == 'lesson'){
-                //             $this->askCours();
-                //         }
-                //     }
-                // });
-                // }  
             }
 
 
@@ -144,7 +124,6 @@ class OnboardingConversation extends Conversation
     
 
     protected function askQuest($idQuest){
-        $question;
         $_SESSION['idQuest'] = $idQuest;
         foreach ($_SESSION['quest'] as $quest) {
             if($quest['idQuestion'] == $idQuest){

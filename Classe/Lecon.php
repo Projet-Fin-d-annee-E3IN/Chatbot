@@ -41,12 +41,10 @@ class Lecon
     }
     //Récupérer la liste des questions lié à l'exercice
     function getListQuestions(){
-        $lesLecons = array();
         $pdo = connecDataBase();
         $req = 'SELECT Q.* FROM Lecon L, Question Q WHERE Q.idLecon = L.idLecon';
         $pdoStatement = $pdo->query($req);
-        $lesLecons = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
-        return $lesLecons;
+        return  $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
     }
     //Créer une leçon
     function addQuestion()

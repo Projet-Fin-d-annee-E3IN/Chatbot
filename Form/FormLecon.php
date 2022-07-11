@@ -1,6 +1,6 @@
 <?php require_once '../Connexion.php'?> 
 
-
+<!DOCTYPE html>
 <html lang="fr">
     <h1>Saisie des leçon du cours</h1>
 <form action="FormLecon.traitement.php" method="post">

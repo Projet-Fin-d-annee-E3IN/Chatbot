@@ -22,12 +22,10 @@ class Cours
 
     //Recupérer la liste des leçons du cours
     function getListLecons(){
-        $lesCours = array();
         $pdo = connecDataBase();
         $req = 'SELECT L.* FROM Lecon L, Cours C WHERE C.idCours = L.idCours';
         $pdoStatement = $pdo->query($req);
-        $lesCours = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
-        return $listeLecons;
+        return $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
     }
 
 //Ajouter un cours
