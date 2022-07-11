@@ -1,6 +1,5 @@
 <?php
 include '../Connexion.php';
-// require 'Question.php';
 
 class Lecon
 {
@@ -91,7 +90,7 @@ class Lecon
 
     //Pouvoir supprimer une question dans les leçons
     function deleteQuestion($id){
-        $quest = new Question('','','');
+        $quest = new Question();
         $quest.deleteQuestion($id);
     }
 }
