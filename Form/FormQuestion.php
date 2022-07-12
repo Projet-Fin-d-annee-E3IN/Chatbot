@@ -3,9 +3,12 @@
 <!DOCTYPE html>
 <title>Question LAB</title>
 <html lang="fr">
-    <h1>Saisie des question de la leçon</h1>
+    <h1>Saisie des question de la leçon :</h1>
 <form action="FormQuestion.traitement.php" method="post">
  <p class="blocktext">
+ <a>Selectionner a quelle cours appartien cette lecon</a>
+ <br>
+ <br>
  <select name="lecon" id="cours">
     <?php
     $listNotion = listNotion(); 
@@ -18,6 +21,7 @@
 
         <?php endforeach; ?>
 </select>
+<br>
 <br>
     <a>Question :</a>
  </br>

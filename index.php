@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<title>LAB</title>
 <?php 
 session_start();
 require_once 'Connexion.php';
@@ -12,7 +14,7 @@ $_SESSION['quest'] = $listQuest;
 	  <script>
         var botmanWidget = {
             frameEndpoint: 'chat.html',
-            introMessage: 'Hello',
+            introMessage: 'Say hello to start chating',
             chatServer : 'botman.php', 
             title: 'LAB'
         }; 

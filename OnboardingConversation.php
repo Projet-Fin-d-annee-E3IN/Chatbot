@@ -26,8 +26,9 @@ class OnboardingConversation extends Conversation
             $button = Button::create($cours['nom'])->value($cours['idCours']);
             $buttonArray[] = $button;
         }
-        $this->say('Welcome to our online course chat bot is at your disposal to help you during your learning');
-        $question = Question::create('Which course do you want to study ?')
+        $question = Question::create('My name is LAB. I am a bot design to teach English lessons. 
+        I can give you explanations on a specific subject and ask you questions about it to see if you understood them.
+        The lessons I can teach you are :')
         ->addButtons($buttonArray);
     $this->ask($question, function (Answer $answer) {
         // Detect if button was clicked:
